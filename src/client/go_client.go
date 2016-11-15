@@ -7,7 +7,7 @@ import (
 	"os"
 	//"strconv"
 	"time"
-	"demo/demo"
+	"idalloc/idalloc"
 )
 
 const (
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	useTransport := transportFactory.GetTransport(transport)
-	client := demo.NewDemoClientFactory(useTransport, protocolFactory)
+	client := idalloc.NewIdallocClientFactory(useTransport, protocolFactory)
 	if err := transport.Open(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error opening socket to "+HOST+":"+PORT, " ", err)
 		os.Exit(1)
@@ -43,29 +43,13 @@ func main() {
 	//	}
 
 	model := make(map[string]string)
-	model["demo_id"] = "1000"
-	model["demo_name"] = "诸葛亮"
+	model["id"] = "1000"
+	model["type_name"] = "msg_id"
 
 
-	intNewDemoId, _ := client.ProcessDemo(model)
+	intNewDemoId, _ := client.GenId(model)
 
-	fmt.Println("new_demo_id : ", intNewDemoId)
-
-	for i := 0; i < 1; i++ {
-		paramMap := make(map[string]string)
-
-		//paramMap["user_id"] = strconv.FormatInt(intNewUserId, 10)
-		//userInfo, _ := client.GetUserInfo(paramMap)
-
-		paramMap["demo_id"] = "45"
-		demoInfo, _ := client.GetDemoInfo(paramMap)
-		fmt.Println("GOClient Call->", demoInfo)
-
-		for k, v := range demoInfo {
-			fmt.Println(k)
-			fmt.Println(v)
-		}
-	}
+	fmt.Println("new_msg_id : ", intNewDemoId)
 
 	endTime := currentTimeMillis()
 	fmt.Printf("本次调用用时:%d-%d=%d毫秒\n", endTime, startTime, (endTime - startTime))

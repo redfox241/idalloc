@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"os"
-	"demo/demo" //注意导入Thrift生成的接口包
+	"idalloc/idalloc" //注意导入Thrift生成的接口包
 	"utils"
 )
 
@@ -34,18 +34,21 @@ func main() {
 	ip_addr := utils.GetValuesByKeys("server_setting","ip_addr").(string)
 	port := utils.GetValuesByKeys("server_setting","port").(string)
 
+	//thrift protocol
 	transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
 	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
 	//protocolFactory := thrift.NewTCompactProtocolFactory()
 
+	//create server
 	serverTransport, err := thrift.NewTServerSocket(ip_addr+":"+port)
 	if err != nil {
 		fmt.Println("Error!", err)
 		os.Exit(1)
 	}
 
-	handler := controllers.GetDemoThrift()
-	processor := demo.NewDemoProcessor(handler)
+	//relation controlls
+	handler := controllers.GetIdallocThrift()
+	processor := idalloc.NewIdallocProcessor(handler)
 
 	server := thrift.NewTSimpleServer4(processor, serverTransport, transportFactory, protocolFactory)
 	utils.LogDebug("Starting the simple server on :", ip_addr+":"+port)
