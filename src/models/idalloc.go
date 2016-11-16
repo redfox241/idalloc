@@ -19,107 +19,102 @@ import (
 	"github.com/go-xorm/xorm"
 	"utils"
 	"fmt"
-	"errors"
-	"strings"
-	"math/rand"
-	"time"
+	"github.com/garyburd/redigo/redis"
 )
 
 var engine *xorm.Engine
+var rediscon redis.Conn
 
 const (
 	APP_CONFIG = "/conf/app.conf"
 )
 
-
 type Idalloc struct {
-	Id   int64  `xorm:"id pk autoincr"`
-	Type_name string `xorm:"type_name varchar(100) not null"`
+	Id         int64  `xorm:"id pk autoincr"`
+	Type_name  string `xorm:"type_name varchar(100) not null"`
 	Idalloc_id int64 `xorm:"idalloc_id bigint not null"`
-
 }
 
 /**
  * 初始化方法
  **/
 func init() {
-
+	
 	//初始化数据库连接
-	engine, _ = utils.GetDB()
+	engine   , _  = utils.GetDB()
+	rediscon , _  = utils.GetRedisConnect()
+	
 }
 
-/**
-* 新创建id
+
+/*
+ * 分配id，使用mysql存储
+ *
  */
-func CreateNewIdalloc(paramMap map[string]string) (int64, error) {
-	
-	//err := engine.Sync2(new(Idalloc))
-	//if err != nil{
-	//
-	//}
 
-	idInfo := new(Idalloc)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	idInfo.Idalloc_id = int64( r.Intn(100) )
-	
-	condInfo := new(Idalloc)
-	condInfo.Type_name = strings.Trim( paramMap["type_name"],"")
-	
-	intAffected,err := engine.Update( idInfo,condInfo )
-	
-	fmt.Println(intAffected,err)
-
-	return intAffected,err
-
-}
-
-func AllocId(paramMap map[string]string) (int64, error) {
-	
+func AllocIdByMysql(paramMap map[string]string) (int64, error) {
 	
 	idallocInfo := make([]Idalloc, 0)
-	var newIdallocId  int64 = 0
+	var newIdallocId int64 = 0
 	
 	session := engine.NewSession()
 	defer session.Close()
 	
 	err := session.Begin()
-	if err != nil{
-		return 0,nil
+	if err != nil {
+		utils.CheckErr(err)
 	}
 	
-	_,err1 := session.Engine.Exec("update idalloc set idalloc_id = idalloc_id + 1 where type_name = ?",paramMap["type_name"])
+	strUpdate := fmt.Sprintf("insert into idalloc ( id,type_name,idalloc_id ) value (0,'%s','1')  " +
+		"on duplicate key update idalloc_id = idalloc_id + 1 ", paramMap["type_name"])
+	_, errUpdate := session.Engine.Exec(strUpdate)
 	
-	if err1 == nil{
+	if errUpdate == nil {
 		
-		strSelectCmd := fmt.Sprintf("select * from idalloc where type_name = '%s' ",paramMap["type_name"] )
-		errselect := session.Engine.Sql(strSelectCmd).Find(&idallocInfo)
-		if errselect == nil{
-			
+		strSelectCmd := fmt.Sprintf("select * from idalloc where type_name = '%s' ", paramMap["type_name"])
+		errget := session.Engine.Sql(strSelectCmd).Find(&idallocInfo)
+		
+		if errget != nil {
+			utils.LogErr("failed to get id form idalloc")
+			utils.CheckErr(errget)
 		}
 		
-		for _,val := range idallocInfo {
+		for _, val := range idallocInfo {
 			newIdallocId = (val.Idalloc_id)
 		}
 		
 		session.Commit()
-	}else{
+	} else {
 		session.Rollback()
+		utils.LogErr("failed to gen_id,error:", errUpdate)
 		
-		return 0,err1
+		utils.CheckErr(errUpdate)
 	}
 	
-	return  int64(newIdallocId),err1
+	return int64(newIdallocId), errUpdate
 	
 }
 
 
-func CreateNewIdFormFile( paramMap map[string] string ) (int64,int64,error){
+/**
+ * 分配id，by redis
+ *
+ */
+
+func AllocIdByRedis(paramMap map[string]string) (int64, error) {
+	
+	strAllocKey := paramMap["type_name"]
+	
 	utils.SetConfInfo(APP_CONFIG)
-	msg_id := utils.GetValuesByKeys("idalloc_info","msg_id").(int64)
-	//user_id := utils.GetValuesByKeys("idalloc_info","user_id").(string)
+	strKeyPrefix := utils.GetValuesByKeys("redis_key_prefix").(string)
 	
-	err := errors.New("EXIT")
-	fmt.Println(msg_id)
+	rediscon , _  = utils.GetRedisConnect()
+	intVal, err := rediscon.Do("INCR", strKeyPrefix + strAllocKey )
+	if err != nil {
+		utils.LogErr("failed to incr redis,err:", err)
+		utils.CheckErr(err)
+	}
 	
-	return msg_id,msg_id,err
+	return intVal.(int64),err
+	
 }

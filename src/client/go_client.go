@@ -42,14 +42,24 @@ func main() {
 	//		"鞠躬尽瘁，死而后已",
 	//	}
 
-	model := make(map[string]string)
-	model["id"] = "1000"
-	model["type_name"] = "msg_id"
-
-
-	intNewDemoId, _ := client.GenId(model)
-
-	fmt.Println("new_msg_id : ", intNewDemoId)
+	intIndex := 10000
+	intStep := 0
+	
+	for  intStep < intIndex {
+		
+		
+		model := make(map[string]string)
+		model["id"] = "0"
+		model["type_name"] = "msg_id"
+	
+	
+		intNewDemoId , _ := client.GenId(model)
+	
+		fmt.Println("new_msg_id : ", intNewDemoId)
+		
+		intStep ++
+		
+	}
 
 	endTime := currentTimeMillis()
 	fmt.Printf("本次调用用时:%d-%d=%d毫秒\n", endTime, startTime, (endTime - startTime))
