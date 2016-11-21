@@ -42,7 +42,7 @@ func main() {
 	//		"鞠躬尽瘁，死而后已",
 	//	}
 
-	intIndex := 10000
+	intIndex := 1000
 	intStep := 0
 	
 	for  intStep < intIndex {
@@ -69,3 +69,4 @@ func main() {
 func currentTimeMillis() int64 {
 	return time.Now().UnixNano() / 1000000
 }
+

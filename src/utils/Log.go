@@ -58,7 +58,6 @@ func LogNotice(content ...interface{}) {
 func appendToFile(fileName string, logType string, content ...interface{}) error {
 
 	logfile, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	defer logfile.Close()
 	if err != nil {
 		log.Fatalln("open file error !")
 	}

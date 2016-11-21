@@ -41,17 +41,22 @@ func GetDB() (*Engine, error) {
 	//get conf
 	SetConfInfo(DB_CONFIG)
 	db_driver := GetValuesByKeys("db_setting","db_driver").(string)
-	db_name := GetValuesByKeys("db_setting","db_name").(string)
-	user := GetValuesByKeys("db_setting","user").(string)
-	passwd := GetValuesByKeys("db_setting","passwd").(string)
-	ipaddr := GetValuesByKeys("db_setting","ip_addr").(string)
-	port := GetValuesByKeys("db_setting","port").(string)
+	db_name   := GetValuesByKeys("db_setting","db_name").(string)
+	user      := GetValuesByKeys("db_setting","user").(string)
+	passwd    := GetValuesByKeys("db_setting","passwd").(string)
+	ipaddr    := GetValuesByKeys("db_setting","ip_addr").(string)
+	port      := GetValuesByKeys("db_setting","port").(string)
 	db_charset := GetValuesByKeys("db_setting","charset").(string)
-
+	max_connect := GetValuesByKeys("db_setting","max_connect").(int)
+	
 	var err error
 	strConnect := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s", user, passwd, ipaddr, port, db_name, db_charset)
 	//fmt.Println(strConnect)
 	dbconnect, err = NewEngine(db_driver, strConnect)
+	
+	//设置最大连接数
+	dbconnect.SetMaxOpenConns(max_connect)
+
 	dbconnect.ShowSQL(true)
 	
 	//defer dbconnect.Close()

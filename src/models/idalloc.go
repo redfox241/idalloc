@@ -88,8 +88,12 @@ func AllocIdByMysql(paramMap map[string]string) (int64, error) {
 		session.Rollback()
 		utils.LogErr("failed to gen_id,error:", errUpdate)
 		
+		session.Close()
+		
 		utils.CheckErr(errUpdate)
 	}
+	
+	session.Close()
 	
 	return int64(newIdallocId), errUpdate
 	
@@ -112,8 +116,11 @@ func AllocIdByRedis(paramMap map[string]string) (int64, error) {
 	intVal, err := rediscon.Do("INCR", strKeyPrefix + strAllocKey )
 	if err != nil {
 		utils.LogErr("failed to incr redis,err:", err)
+		rediscon.Close()
 		utils.CheckErr(err)
 	}
+	
+	rediscon.Close()
 	
 	return intVal.(int64),err
 	

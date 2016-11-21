@@ -106,15 +106,16 @@ func GetValuesByKeys(keys ...string) interface{} {
 	} else {
 		
 		confContent := GetValByKey(keys[0], appConfContent)
+		
 		for intIndex := 1; intIndex < len(keys); intIndex ++ {
 			switch reflect.TypeOf(confContent).Kind() {
-			case reflect.Map:
-				confContent = GetValByKey(keys[intIndex], confContent.(map[interface{}]interface{}))
-			case reflect.Array:
-				fmt.Println(reflect.TypeOf(confContent))
-				confContent = GetValByKey(keys[intIndex], confContent.(map[interface{}]interface{}))
-			default:
-				confContent = GetValByKey(keys[intIndex], confContent.(map[interface{}]interface{}))
+				case reflect.Map:
+					confContent = GetValByKey(keys[intIndex], confContent.(map[interface{}]interface{}))
+				case reflect.Array:
+					fmt.Println(reflect.TypeOf(confContent))
+					confContent = GetValByKey(keys[intIndex], confContent.(map[interface{}]interface{}))
+				default:
+					confContent = GetValByKey(keys[intIndex], confContent.(map[interface{}]interface{}))
 			}
 		}
 		

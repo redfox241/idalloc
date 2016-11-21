@@ -38,14 +38,23 @@ func GetRedisConnect() ( redis.Conn, error) {
 		LogDebug("success to init redis connect")
 	}
 	
+	var (
+		protocol string
+		host string
+		port string
+	)
+	
 	//get conf
 	SetConfInfo(REDIS_CONFIG)
-	protocol := GetValuesByKeys("redis_setting","redis_protocol").(string)
-	host := GetValuesByKeys("redis_setting","redis_host").(string)
-	port := GetValuesByKeys("redis_setting","redis_port").(string)
-	//pwd := GetValuesByKeys("redis_setting","redis_pwd").(string)
-	//prefix := GetValuesByKeys("redis_setting","redis_key_prefix").(string)
+	protocol = GetValuesByKeys("redis_setting","redis_protocol").(string)
+	host = GetValuesByKeys("redis_setting","redis_host").(string)
+	port = GetValuesByKeys("redis_setting","redis_port").(string)
 	
+	//connTimeout := GetValuesByKeys("redis_setting","redis_connTimeout").(int)
+	//readTimeout := GetValuesByKeys("redis_setting","redis_readTimeout").(int)
+	//writeTimeout := GetValuesByKeys("redis_setting","redis_writeTimeout").(int)
+	
+	//redisconnect, err := redis.DialTimeout( protocol , host + ":" + port ,1,1,1 )
 	
 	redisconnect, err := redis.Dial( protocol , host + ":" + port )
 	
@@ -53,7 +62,7 @@ func GetRedisConnect() ( redis.Conn, error) {
 		LogErr("failed to connect redis,err:",err)
 		CheckErr(err)
 	}
-	//defer redisconnect.Close()
+	defer redisconnect.Close()
 
 	return redisconnect,err
 
