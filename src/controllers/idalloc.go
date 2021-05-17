@@ -47,6 +47,7 @@ func (this *idallocThrift) GenId(paramMap map[string]string) (int64, error) {
 	var newIdId int64 = 0
 	var err error = errors.New("EXIT")
 	
+	//支持多模式
 	switch saveMode {
 		// defalut mysql
 		case 0 :
