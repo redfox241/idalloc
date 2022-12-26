@@ -1,5 +1,5 @@
 # idalloc 
-id 分配微服务，支持 golang + mysql ,golang + redis 
+常用 id 分配微服务，支持 golang + mysql ,golang + redis 
 
 ##配置文件 conf
 
